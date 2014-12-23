@@ -17,7 +17,9 @@ func hoge(num int) {
 }
 
 type Ast struct {
-	Label    string            `json:"label"`
+	Label    string `json:"label"`
+	Type     string
+	Name     string
 	Pos      int               `json:"pos"`
 	End      int               `json:"end"`
 	Attrs    map[string]string `json:"attrs"`
@@ -175,17 +177,16 @@ func main() {
 
 	a, err := BuildAst("", f)
 
-	for _, decl := range a.Children {
-		if strings.Contains(decl.Label, "Decl") {
-			for _, ch := range decl.Children {
-				if strings.Contains(ch.Label, "FuncDecl") {
-					CyclomaticComplexity(ch)
-				}
-			}
+	decl := a.GetChildByLabel("Decl")
+	score := 0
+	for _, ch := range decl.Children {
+		if strings.Contains(ch.Label, "FuncDecl") {
+			score = CyclomaticComplexity(ch)
+			fmt.Println(ch.Label, score)
 		}
-
 	}
-	printer(a)
+
+	// printer(a)
 
 }
 
@@ -199,10 +200,52 @@ func printer(a *Ast) {
 	}
 }
 
-
-func CyclomaticComplexity(a *Ast) int {
-	score := 0
-	for _, child := a.Children {
-		score += CyclomaticComplexity(child)
+func CyclomaticComplexity(a *Ast) (score int) {
+	score = 0
+	// fmt.Println("===========================")
+	// fmt.Println(a.Label)
+	body := a.GetChildByLabel("Body")
+	if body != nil {
+		for _, child := range body.Children {
+			score += CyclomaticComplexity(child)
+		}
 	}
+	if strings.Contains(a.Label, "List") {
+		for _, child := range a.Children {
+			score += CyclomaticComplexity(child)
+		}
+	}
+	switch {
+	case strings.Contains(a.Label, "IfStmt"):
+		// count how many conds
+		conds := a.GetChildByLabel("Cond")
+		if conds != nil {
+			score += CountConds(conds)
+		}
+	case strings.Contains(a.Label, "ForStmt"):
+		score += 1
+	case strings.Contains(a.Label, "CaseClause"):
+		// count how many cases
+		score += 1
+	}
+	return score
+}
+
+func (a *Ast) GetChildByLabel(name string) *Ast {
+	for _, child := range a.Children {
+		if strings.Contains(child.Label, name) {
+			return child
+		}
+	}
+	return nil
+}
+
+func CountConds(a *Ast) int {
+	count := 0
+	if strings.Contains(a.Label, "BinaryExpr") {
+		for _, child := range a.Children {
+			count += CountConds(child)
+		}
+	}
+	return count
 }
