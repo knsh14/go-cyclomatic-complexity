@@ -246,6 +246,9 @@ func CountConds(a *Ast) int {
 		for _, child := range a.Children {
 			count += CountConds(child)
 		}
+		return count
+	} else {
+		return 1
 	}
-	return count
+
 }
