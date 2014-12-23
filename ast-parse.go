@@ -182,28 +182,26 @@ func main() {
 	for _, ch := range decl.Children {
 		if strings.Contains(ch.Label, "FuncDecl") {
 			score = CyclomaticComplexity(ch)
-			fmt.Println(ch.Label, score)
+			switch {
+			case score <= 12:
+				// good code
+				fmt.Println("Good! ", ch.Label, score)
+			case score <= 30:
+				// normal code
+				fmt.Println("Bad ", ch.Label, score)
+			case score <= 50:
+				// bad code
+				fmt.Println("Terrible ", ch.Label, score)
+			default:
+				// terrible code
+				fmt.Println("Awful ", ch.Label, score)
+			}
 		}
-	}
-
-	// printer(a)
-
-}
-
-func printer(a *Ast) {
-	fmt.Println("==========")
-	fmt.Println(a.Label)
-	fmt.Println(a.Attrs)
-	for _, ch := range a.Children {
-		fmt.Println(ch.Attrs)
-		fmt.Println(ch.Label)
 	}
 }
 
 func CyclomaticComplexity(a *Ast) (score int) {
 	score = 0
-	// fmt.Println("===========================")
-	// fmt.Println(a.Label)
 	body := a.GetChildByLabel("Body")
 	if body != nil {
 		for _, child := range body.Children {
