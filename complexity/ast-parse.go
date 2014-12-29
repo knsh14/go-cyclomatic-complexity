@@ -1,4 +1,4 @@
-package main
+package complexity
 
 import (
 	"bytes"
@@ -158,12 +158,12 @@ func Label(prefix string, n interface{}) string {
 	return string(bf.Bytes())
 }
 
-func main() {
+func CheckFiles(filepath string, limit int) {
 	fset := token.NewFileSet() // positions are relative to fset
 
 	// Parse the file containing this very example
 	// but stop after processing the imports.
-	f, err := parser.ParseFile(fset, "sample.go", nil, 0)
+	f, err := parser.ParseFile(fset, filepath, nil, 0)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -176,19 +176,8 @@ func main() {
 	for _, ch := range decl.Children {
 		if strings.Contains(ch.Label, "FuncDecl") {
 			score = CyclomaticComplexity(ch)
-			switch {
-			case score <= 12:
-				// good code
-				fmt.Println("Good! ", ch.Label, score)
-			case score <= 30:
-				// normal code
-				fmt.Println("Bad ", ch.Label, score)
-			case score <= 50:
-				// bad code
-				fmt.Println("Terrible ", ch.Label, score)
-			default:
-				// terrible code
-				fmt.Println("Awful ", ch.Label, score)
+			if score > limit {
+				fmt.Println(ch.Label, score, " > ", limit)
 			}
 		}
 	}
@@ -242,5 +231,4 @@ func CountConds(a *Ast) int {
 	} else {
 		return 1
 	}
-
 }

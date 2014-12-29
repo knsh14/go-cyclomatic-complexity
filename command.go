@@ -1,8 +1,8 @@
 package main
 
 import (
+	"complexity"
 	"flag"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,9 +24,9 @@ func main() {
 }
 
 func walk(path string, info os.FileInfo, err error) error {
-	if strings.HasPrefix(path, ".") {
+	if strings.HasPrefix(path, ".") || !strings.HasSuffix(path, ".go") {
 		return nil
 	}
-	fmt.Println(path)
+	complexity.CheckFiles(path, limit)
 	return nil
 }
