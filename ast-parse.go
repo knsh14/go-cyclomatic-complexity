@@ -10,12 +10,6 @@ import (
 	"strings"
 )
 
-func hoge(num int) {
-	if num > 3 {
-		fmt.Println("hogehoge")
-	}
-}
-
 type Ast struct {
 	Label    string `json:"label"`
 	Type     string
