@@ -3,17 +3,15 @@ package complexity
 import (
 	"fmt"
 	"go/ast"
+	"go/token"
 	"reflect"
 )
 
 type Ast struct {
-	Type     string            `json:"type"`
-	Name     string            `json:"name"`
-	Pos      int               `json:"pos"`
-	End      int               `json:"end"`
-	Attrs    map[string]string `json:"attrs"`
-	Children []*Ast            `json:"children"`
-	Info     map[string]string `json:"info"`
+	Name     string
+	Pos      token.Pos
+	Attrs    map[string]string
+	Children []*Ast
 }
 
 type AstConverter interface {
@@ -24,13 +22,10 @@ func BuildAst(prefix string, n interface{}) (astobj *Ast, err error) {
 	v := reflect.ValueOf(n)
 	t := v.Type()
 
-	a := Ast{Info: Attrs(prefix, n), Attrs: map[string]string{}, Children: []*Ast{}}
-	a.Type = fmt.Sprintf("%T", n)
+	a := Ast{Attrs: Attrs(prefix, n), Children: []*Ast{}}
 
-	// fmt.Println(strings.EqualFold(a.Type, a.Info["Type"]))
 	if node, ok := n.(ast.Node); ok {
-		a.Pos = int(node.Pos())
-		a.End = int(node.End())
+		a.Pos = node.Pos()
 	}
 
 	if v.Kind() == reflect.Ptr {

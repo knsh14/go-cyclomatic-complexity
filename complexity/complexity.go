@@ -21,10 +21,11 @@ func CheckFiles(filepath string, limit int) {
 	decl := a.GetChildByString("Type", "Decl")
 	score := 0
 	for _, ch := range decl.Children {
-		if strings.Contains(ch.Info["Type"], "FuncDecl") {
+		if strings.Contains(ch.Attrs["Type"], "FuncDecl") {
 			score = CyclomaticComplexity(ch)
 			if score > limit {
-				fmt.Printf("%s :%s is too complex %d > %d\n", filepath, ch.Info["Name"], score, limit)
+				Position := fset.Position(ch.Pos)
+				fmt.Printf("%s :Line %d func %s is too complex %d > %d\n", filepath, Position.Line, ch.Attrs["Name"], score, limit)
 			}
 		}
 	}
@@ -38,21 +39,21 @@ func CyclomaticComplexity(a *Ast) (score int) {
 			score += CyclomaticComplexity(child)
 		}
 	}
-	if strings.Contains(a.Info["Type"], "List") || strings.Contains(a.Info["Prefix"], "List") {
+	if strings.Contains(a.Attrs["Type"], "List") || strings.Contains(a.Attrs["Prefix"], "List") {
 		for _, child := range a.Children {
 			score += CyclomaticComplexity(child)
 		}
 	}
 	switch {
-	case strings.Contains(a.Info["Type"], "IfStmt"):
+	case strings.Contains(a.Attrs["Type"], "IfStmt"):
 		// count how many conds
 		conds := a.GetChildByString("Prefix", "Cond")
 		if conds != nil {
 			score += CountConds(conds)
 		}
-	case strings.Contains(a.Info["Type"], "ForStmt"):
+	case strings.Contains(a.Attrs["Type"], "ForStmt"):
 		score += 1
-	case strings.Contains(a.Info["Type"], "CaseClause"):
+	case strings.Contains(a.Attrs["Type"], "CaseClause"):
 		// count how many cases
 		score += 1
 	}
@@ -61,7 +62,7 @@ func CyclomaticComplexity(a *Ast) (score int) {
 
 func (a *Ast) GetChildByString(key, name string) *Ast {
 	for _, child := range a.Children {
-		if strings.Contains(child.Info[key], name) {
+		if strings.Contains(child.Attrs[key], name) {
 			return child
 		}
 	}
@@ -70,7 +71,7 @@ func (a *Ast) GetChildByString(key, name string) *Ast {
 
 func CountConds(a *Ast) int {
 	count := 0
-	if strings.Contains(a.Info["Type"], "BinaryExpr") {
+	if strings.Contains(a.Attrs["Type"], "BinaryExpr") {
 		for _, child := range a.Children {
 			count += CountConds(child)
 		}
