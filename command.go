@@ -15,7 +15,7 @@ var (
 
 func init() {
 	flag.StringVar(&path, "path", ".", "root path to measure")
-	flag.IntVar(&limit, "limit", 12, "max complexity to allow")
+	flag.IntVar(&limit, "limit", 12, "max allowed complexity")
 }
 
 func main() {

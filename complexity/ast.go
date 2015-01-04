@@ -39,16 +39,11 @@ func BuildAst(prefix string, n interface{}) (astobj *Ast, err error) {
 
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice:
-
-		for i := 0; i < v.Len(); i++ {
-			f := v.Index(i)
-
-			child, err := BuildAst(fmt.Sprintf("%d", i), f.Interface())
-			if err != nil {
-				return nil, err
-			}
-			a.Children = append(a.Children, child)
+		children, err := ArrayAndSlices(v)
+		if err != nil {
+			return nil, err
 		}
+		a.Children = children
 	case reflect.Map:
 		for _, kv := range v.MapKeys() {
 			f := v.MapIndex(kv)
@@ -144,4 +139,18 @@ func Attrs(prefix string, n interface{}) map[string]string {
 		attrs[fmt.Sprintf("%s", n)] = fmt.Sprintf("%s", n)
 	}
 	return attrs
+}
+
+func ArrayAndSlices(v reflect.Value) ([]*Ast, error) {
+	var children []*Ast
+	for i := 0; i < v.Len(); i++ {
+		f := v.Index(i)
+
+		child, err := BuildAst(fmt.Sprintf("%d", i), f.Interface())
+		if err != nil {
+			return nil, err
+		}
+		children = append(children, child)
+	}
+	return children, nil
 }
